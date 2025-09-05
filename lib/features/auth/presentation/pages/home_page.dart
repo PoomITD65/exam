@@ -1,7 +1,9 @@
 import 'package:demo/features/auth/presentation/pages/calendar_page.dart';
 import 'package:demo/features/auth/presentation/pages/edit_profile_page.dart';
+import 'package:demo/features/auth/presentation/pages/scan_page.dart';
 import 'package:demo/features/auth/presentation/pages/test_page.dart';
-import 'package:demo/features/auth/presentation/pages/test_result_page.dart'; // <- เพิ่ม
+import 'package:demo/features/auth/presentation/pages/test_result_page.dart';
+import 'package:demo/features/auth/presentation/pages/notification_page.dart'; // <- เพิ่ม
 import 'package:flutter/material.dart';
 import '../../../../app/app_theme.dart';
 
@@ -12,34 +14,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // ปรับค่าตามต้องการได้
-  static const double _kBarHeight = 64; // ความสูงแถบล่าง
-  static const double _kScanSize = 48; // เส้นผ่านศูนย์กลางปุ่มสแกน
-
+  static const double _kBarHeight = 64;
+  static const double _kScanSize = 48;
   int _tab = 0;
-
-  // -------- popup ปุ่มสแกน --------
-  void _showScanPopup() {
-    showDialog(
-      context: context,
-      builder: (c) => AlertDialog(
-        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        content: const Text(
-          'กดหาพ่อง',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(c),
-            child: const Text('ปิด'),
-          ),
-        ],
-      ),
-    );
-  }
-  // --------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -48,29 +25,33 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: kBg,
 
-      // ไม่มี FAB ลอย เพื่อให้ปุ่มสแกนอยู่ระดับเดียวกับแถบล่างเสมอ
-      body: const SafeArea(
+      body: SafeArea(
         bottom: false,
         child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 15),
-              _HeaderCard(),
-              SizedBox(height: 12), // ลดหลั่นภาพกับการ์ดวันที่ลงมานิดนึง
-              _HeroBanner(),
-              SizedBox(height: 12),
-              _StatsRow(),
-              SizedBox(height: 16),
-              _LatestExamsPanel(),
-              SizedBox(height: 20),
+              const SizedBox(height: 15),
+              _HeaderCard(
+                onBellTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const NotificationPage()),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              const _HeroBanner(),
+              const SizedBox(height: 12),
+              const _StatsRow(),
+              const SizedBox(height: 16),
+              const _LatestExamsPanel(),
+              const SizedBox(height: 20),
             ],
           ),
         ),
       ),
 
-      // Bottom bar โค้งบน + ปุ่มสแกนอยู่ "ในบาร์" ตำแหน่งคงที่เสมอ
       bottomNavigationBar: keyboardOpen
           ? const SizedBox.shrink()
           : SafeArea(
@@ -93,7 +74,6 @@ class _HomePageState extends State<HomePage> {
                 ),
                 child: Row(
                   children: [
-                    // ซ้าย 2 ปุ่ม
                     Expanded(
                       child: _BarItem(
                         icon: Icons.home_rounded,
@@ -115,13 +95,16 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
 
-                    // ปุ่มสแกน (อยู่ในบาร์ ไม่ลอย)
                     SizedBox(
-                      width: _kScanSize + 24, // เผื่อขอบซ้าย-ขวา
+                      width: _kScanSize + 24,
                       child: Center(
                         child: InkResponse(
                           radius: _kScanSize,
-                          onTap: _showScanPopup, // << เด้งป๊อปอัป “กดหาพ่อง”
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => const ScanPage()),
+                            );
+                          },
                           child: Container(
                             width: _kScanSize,
                             height: _kScanSize,
@@ -146,7 +129,6 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
 
-                    // ขวา 2 ปุ่ม
                     Expanded(
                       child: _BarItem(
                         icon: Icons.calendar_month_rounded,
@@ -154,8 +136,7 @@ class _HomePageState extends State<HomePage> {
                         active: _tab == 2,
                         onTap: () {
                           Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (_) => const CalendarPage()),
+                            MaterialPageRoute(builder: (_) => const CalendarPage()),
                           );
                         },
                       ),
@@ -164,12 +145,10 @@ class _HomePageState extends State<HomePage> {
                       child: _BarItem(
                         icon: Icons.person_rounded,
                         label: 'Profile',
-                        active:
-                            _tab == 3, // จะคงไว้หรือจะเปลี่ยนเป็น false ก็ได้
+                        active: _tab == 3,
                         onTap: () {
                           Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (_) => const EditProfilePage()),
+                            MaterialPageRoute(builder: (_) => const EditProfilePage()),
                           );
                         },
                       ),
@@ -184,7 +163,8 @@ class _HomePageState extends State<HomePage> {
 
 /// -------------------- Header --------------------
 class _HeaderCard extends StatelessWidget {
-  const _HeaderCard();
+  const _HeaderCard({this.onBellTap});
+  final VoidCallback? onBellTap;
 
   @override
   Widget build(BuildContext context) {
@@ -223,15 +203,19 @@ class _HeaderCard extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white10,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.notifications_active_rounded,
-              color: Colors.redAccent,
+          InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: onBellTap,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white10,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.notifications_active_rounded,
+                color: Colors.redAccent,
+              ),
             ),
           ),
         ],
@@ -318,10 +302,9 @@ class _StatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ทำหัวข้อให้ "ตัวหนา" และจัดกลาง
     final labelStyle = Theme.of(context).textTheme.bodySmall?.copyWith(
           color: Colors.black87,
-          fontWeight: FontWeight.w700, // ตัวหนา
+          fontWeight: FontWeight.w700,
           height: 1.0,
         );
     final unitStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -384,12 +367,10 @@ class _StatCard extends StatelessWidget {
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center, // จัดกึ่งกลางแนวนอน
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // หัวข้อ "อยู่ด้านบนและกึ่งกลาง"
           Text(title, style: labelStyle, textAlign: TextAlign.center),
           const Spacer(),
-          // ค่าตัวเลข/หน่วย จัดกึ่งกลางเหมือนเดิม
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -451,17 +432,14 @@ class _LatestExamsPanel extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          // ยืด item ให้สูงขึ้นด้วยการเพิ่มช่องไฟ + padding แถว
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _items.length,
-            separatorBuilder: (_, __) =>
-                const Divider(height: 12, thickness: .6),
+            separatorBuilder: (_, __) => const Divider(height: 12, thickness: .6),
             itemBuilder: (context, i) {
               final e = _items[i];
 
-              // --- กดชุด A -> ไปหน้า TestResultPage ---
               VoidCallback onTap;
               if (e.title == 'ข้อสอบชุดที่ A') {
                 onTap = () {
@@ -487,7 +465,7 @@ class _LatestExamsPanel extends StatelessWidget {
                 title: e.title,
                 tag: e.tag,
                 date: e.date,
-                onTap: onTap, // <- ส่ง onTap เข้าไป
+                onTap: onTap,
               );
             },
           ),
@@ -533,7 +511,6 @@ class _ExamTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
             children: [
-              // แท่งแดงซ้ายให้สูงขึ้นเล็กน้อย
               Container(
                 width: 2.5,
                 height: 32,
@@ -543,7 +520,6 @@ class _ExamTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              // เนื้อหา
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
