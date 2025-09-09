@@ -43,6 +43,14 @@ class _CalendarPageState extends State<CalendarPage> {
         detail: 'Weekly check-in with the team, define next sprint scope.',
       ),
     ],
+    DateUtils.dateOnly(DateTime(2025, 8, 22)): [
+      const _Event(
+        title: 'Internal review & planning',
+        timeRange: '09:30 - 10:30',
+        imagePath: 'assets/images/cover_placeholder.jpg',
+        detail: 'Weekly check-in with the team, define next sprint scope.',
+      ),
+    ],
   };
 
   // -------- popup ปุ่มสแกน --------
