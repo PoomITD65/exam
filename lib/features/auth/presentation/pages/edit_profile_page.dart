@@ -1,4 +1,5 @@
 import 'package:demo/features/auth/presentation/pages/calendar_page.dart';
+import 'package:demo/features/auth/presentation/pages/scan_page.dart';
 import 'package:flutter/material.dart';
 import '../../../../app/app_theme.dart';
 
@@ -323,8 +324,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         child: InkResponse(
                           radius: _kScanSize,
                           onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('กดหาพ่อง')),
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => const ScanPage()),
                             );
                           },
                           child: Container(

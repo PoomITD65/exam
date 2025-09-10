@@ -3,7 +3,7 @@ import 'package:demo/features/auth/presentation/pages/edit_profile_page.dart';
 import 'package:demo/features/auth/presentation/pages/scan_page.dart';
 import 'package:demo/features/auth/presentation/pages/test_page.dart';
 import 'package:demo/features/auth/presentation/pages/test_result_page.dart';
-import 'package:demo/features/auth/presentation/pages/notification_page.dart'; // <- เพิ่ม
+import 'package:demo/features/auth/presentation/pages/notification_page.dart';
 import 'package:flutter/material.dart';
 import '../../../../app/app_theme.dart';
 
@@ -41,11 +41,11 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
               const SizedBox(height: 12),
-              const _HeroBanner(),
+              const _HeroBanner(),      // ← แตะเพื่อไป CalendarPage
               const SizedBox(height: 12),
-              const _StatsRow(),
+              const _StatsRow(),        // ← แตะการ์ดซ้ายเพื่อไป TestPage
               const SizedBox(height: 16),
-              const _LatestExamsPanel(),
+              const _LatestExamsPanel(),// ← “ดูทั้งหมด” แตะเพื่อไป TestPage
               const SizedBox(height: 20),
             ],
           ),
@@ -230,66 +230,82 @@ class _HeroBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(28),
-      child: SizedBox(
-        height: 108,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              flex: 14,
-              child: Image.asset(
-                'assets/images/cover_placeholder.jpg',
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Center(
-                  child: Icon(
-                    Icons.image_rounded,
-                    color: Colors.white70,
-                    size: 40,
-                  ),
-                ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(28),
+        onTap: () {
+          // ส่งวันที่ 22 Aug 2025 ตามข้อความบนแบนเนอร์
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => CalendarPage(
+                initialSelected: DateTime(2025, 8, 22),
               ),
             ),
-            Expanded(
-              flex: 11,
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(28),
-                    bottomRight: Radius.circular(28),
+          );
+        },
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: SizedBox(
+            height: 108,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  flex: 14,
+                  child: Image.asset(
+                    'assets/images/cover_placeholder.jpg',
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Center(
+                      child: Icon(
+                        Icons.image_rounded,
+                        color: Colors.white70,
+                        size: 40,
+                      ),
+                    ),
                   ),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      '22 AUGUST 2025',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w900,
-                            height: 1.0,
-                            letterSpacing: .2,
-                          ),
+                Expanded(
+                  flex: 11,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topRight: Radius.circular(28),
+                        bottomRight: Radius.circular(28),
+                      ),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'กำหนดส่งข้อสอบ',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.black87,
-                            fontWeight: FontWeight.w600,
-                            height: 1.0,
-                          ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '22 AUGUST 2025',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w900,
+                                height: 1.0,
+                                letterSpacing: .2,
+                              ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'กำหนดส่งข้อสอบ',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Colors.black87,
+                                fontWeight: FontWeight.w600,
+                                height: 1.0,
+                              ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -322,6 +338,11 @@ class _StatsRow extends StatelessWidget {
             unit: 'ชุด',
             labelStyle: labelStyle,
             unitStyle: unitStyle,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const TestPage()),
+              );
+            },
           ),
         ),
         const SizedBox(width: 10),
@@ -332,6 +353,11 @@ class _StatsRow extends StatelessWidget {
             unit: '',
             labelStyle: labelStyle,
             unitStyle: unitStyle,
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('สถิติอื่น ๆ (demo)')),
+              );
+            },
           ),
         ),
       ],
@@ -342,6 +368,7 @@ class _StatsRow extends StatelessWidget {
 class _StatCard extends StatelessWidget {
   final String title, value, unit;
   final TextStyle? labelStyle, unitStyle;
+  final VoidCallback? onTap;
   const _StatCard({
     super.key,
     required this.title,
@@ -349,6 +376,7 @@ class _StatCard extends StatelessWidget {
     required this.unit,
     this.labelStyle,
     this.unitStyle,
+    this.onTap,
   });
 
   @override
@@ -359,7 +387,7 @@ class _StatCard extends StatelessWidget {
           height: 1.0,
         );
 
-    return Container(
+    final child = Container(
       height: 82,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -385,6 +413,17 @@ class _StatCard extends StatelessWidget {
         ],
       ),
     );
+
+    return onTap == null
+        ? child
+        : Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(14),
+              onTap: onTap,
+              child: child,
+            ),
+          );
   }
 }
 
@@ -428,7 +467,18 @@ class _LatestExamsPanel extends StatelessWidget {
             children: [
               Text('ข้อสอบล่าสุด', style: panelTitle),
               const Spacer(),
-              Text('ดูทั้งหมด', style: seeAll),
+              InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const TestPage()),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Text('ดูทั้งหมด', style: seeAll),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 10),

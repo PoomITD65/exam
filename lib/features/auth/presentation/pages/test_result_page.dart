@@ -2,7 +2,9 @@ import 'package:demo/features/auth/presentation/pages/calendar_page.dart';
 import 'package:flutter/material.dart';
 import '../../../../app/app_theme.dart';
 import '../../presentation/pages/home_page.dart';
-import '../../presentation/pages/test_page.dart';
+import 'package:demo/features/auth/presentation/pages/test_page.dart';
+import 'package:demo/features/auth/presentation/pages/scan_page.dart';
+
 import '../../presentation/pages/edit_profile_page.dart';
 // ⬇️ เพิ่ม import หน้ารายละเอียด/หลักฐาน
 import '../../presentation/pages/test_detail_page.dart';
@@ -147,13 +149,7 @@ class _TestResultPageState extends State<TestResultPage> {
                         icon: Icons.home_rounded,
                         label: 'Home',
                         active: _tab == 0,
-                        onTap: () {
-                          setState(() => _tab = 0);
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (_) => const HomePage()),
-                          );
-                        },
+                        onTap: () => setState(() => _tab = 0),
                       ),
                     ),
                     Expanded(
@@ -162,22 +158,21 @@ class _TestResultPageState extends State<TestResultPage> {
                         label: 'Test',
                         active: _tab == 1,
                         onTap: () {
-                          setState(() => _tab = 1);
-                          Navigator.pushReplacement(
-                            context,
+                          Navigator.of(context).push(
                             MaterialPageRoute(builder: (_) => const TestPage()),
                           );
                         },
                       ),
                     ),
+
                     SizedBox(
                       width: _kScanSize + 24,
                       child: Center(
                         child: InkResponse(
                           radius: _kScanSize,
                           onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('กดหาพ่อง')),
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => const ScanPage()),
                             );
                           },
                           child: Container(
@@ -203,6 +198,7 @@ class _TestResultPageState extends State<TestResultPage> {
                         ),
                       ),
                     ),
+
                     Expanded(
                       child: _BarItem(
                         icon: Icons.calendar_month_rounded,
@@ -210,8 +206,7 @@ class _TestResultPageState extends State<TestResultPage> {
                         active: _tab == 2,
                         onTap: () {
                           Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (_) => const CalendarPage()),
+                            MaterialPageRoute(builder: (_) => const CalendarPage()),
                           );
                         },
                       ),
@@ -222,9 +217,7 @@ class _TestResultPageState extends State<TestResultPage> {
                         label: 'Profile',
                         active: _tab == 3,
                         onTap: () {
-                          setState(() => _tab = 3);
-                          Navigator.pushReplacement(
-                            context,
+                          Navigator.of(context).push(
                             MaterialPageRoute(builder: (_) => const EditProfilePage()),
                           );
                         },

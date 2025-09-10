@@ -1,7 +1,7 @@
 import 'package:demo/features/auth/presentation/pages/calendar_page.dart';
 import 'package:demo/features/auth/presentation/pages/edit_profile_page.dart';
 import 'package:demo/features/auth/presentation/pages/home_page.dart';
-
+import 'package:demo/features/auth/presentation/pages/scan_page.dart';
 import 'package:flutter/material.dart';
 import '../../../../app/app_theme.dart';
 
@@ -23,14 +23,184 @@ class _TestPageState extends State<TestPage> {
   static const double _kBarHeight = 64;
   static const double _kScanSize  = 48;
 
-  // ตัวอย่างข้อมูล
-  static const _items = [
-    _TestItem(code: 'A', subject: 'วิชา วิทยาศาสตร์  ชั้นปี ม. 1', total: 20, pass: 60),
-    _TestItem(code: 'B', subject: 'วิชา คณิตศาสตร์  ชั้นปี ม. 2', total: 20, pass: 60),
-    _TestItem(code: 'C', subject: 'วิชา ภาษาไทย  ชั้นปี ม. 1', total: 20, pass: 60),
-    _TestItem(code: 'D', subject: 'วิชา สังคมศึกษา  ชั้นปี ม. 3', total: 20, pass: 60),
-    _TestItem(code: 'E', subject: 'วิชา อังกฤษ  ชั้นปี ม. 2',   total: 20, pass: 60),
+  // ตัวอย่างข้อมูล (แก้ให้เป็น List ปกติ เพื่อเพิ่ม/ลบได้)
+  final List<_TestItem> _items = [
+    const _TestItem(code: 'A', subject: 'วิชา วิทยาศาสตร์  ชั้นปี ม. 1', total: 20, pass: 60),
+    const _TestItem(code: 'B', subject: 'วิชา คณิตศาสตร์  ชั้นปี ม. 2', total: 20, pass: 60),
+    const _TestItem(code: 'C', subject: 'วิชา ภาษาไทย  ชั้นปี ม. 1', total: 20, pass: 60),
+    const _TestItem(code: 'D', subject: 'วิชา สังคมศึกษา  ชั้นปี ม. 3', total: 20, pass: 60),
+    const _TestItem(code: 'E', subject: 'วิชา อังกฤษ  ชั้นปี ม. 2',   total: 20, pass: 60),
   ];
+
+  // เปิดแผ่นเพิ่มข้อสอบใหม่
+  Future<void> _openAddTestSheet() async {
+    final codeCtrl    = TextEditingController();
+    final subjectCtrl = TextEditingController();
+    final totalCtrl   = TextEditingController();
+    final passCtrl    = TextEditingController(text: '60');
+
+    bool validateAndSave() {
+      final code = codeCtrl.text.trim();
+      final subject = subjectCtrl.text.trim();
+      final total = int.tryParse(totalCtrl.text.trim());
+      final pass  = int.tryParse(passCtrl.text.trim());
+
+      if (code.isEmpty || subject.isEmpty || total == null || pass == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('กรอกข้อมูลให้ครบถ้วน')),
+        );
+        return false;
+      }
+      if (total <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('จำนวนข้อ ต้องมากกว่า 0')),
+        );
+        return false;
+      }
+      if (pass < 0 || pass > 100) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('เกณฑ์ผ่าน (%) ต้องอยู่ระหว่าง 0–100')),
+        );
+        return false;
+      }
+      final dup = _items.any((e) => e.code.toUpperCase() == code.toUpperCase());
+      if (dup) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('มีรหัสชุด "${code.toUpperCase()}" อยู่แล้ว')),
+        );
+        return false;
+      }
+
+      setState(() {
+        _items.add(_TestItem(
+          code: code.toUpperCase(),
+          subject: subject,
+          total: total,
+          pass: pass,
+        ));
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('เพิ่มข้อสอบแล้ว')),
+      );
+      return true;
+    }
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF111827),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 12,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 38,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'เพิ่มข้อสอบใหม่',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // รหัสชุด (A–Z หรืออะไรก็ได้ตามตกลง)
+                TextField(
+                  controller: codeCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: _fieldDeco('รหัสชุด (เช่น A, B, C)'),
+                ),
+                const SizedBox(height: 10),
+
+                // รายวิชา
+                TextField(
+                  controller: subjectCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: _fieldDeco('รายวิชา/คำอธิบาย'),
+                ),
+                const SizedBox(height: 10),
+
+                // จำนวนข้อ + เกณฑ์ผ่าน
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: totalCtrl,
+                        style: const TextStyle(color: Colors.white),
+                        keyboardType: TextInputType.number,
+                        decoration: _fieldDeco('จำนวนข้อ'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: passCtrl,
+                        style: const TextStyle(color: Colors.white),
+                        keyboardType: TextInputType.number,
+                        decoration: _fieldDeco('เกณฑ์ผ่าน (%)'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 44,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      textStyle: const TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    onPressed: () {
+                      if (validateAndSave()) Navigator.pop(context);
+                    },
+                    child: const Text('บันทึก'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  InputDecoration _fieldDeco(String hint) => InputDecoration(
+        hintText: hint,
+        hintStyle: const TextStyle(color: Colors.white54),
+        filled: true,
+        fillColor: const Color(0xFF0E1320),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -64,12 +234,9 @@ class _TestPageState extends State<TestPage> {
                   ),
                   const Spacer(),
                   IconButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('เพิ่มข้อสอบใหม่ (demo)')),
-                      );
-                    },
+                    onPressed: _openAddTestSheet, // ⬅️ เปิดฟอร์มเพิ่มข้อสอบ
                     icon: const Icon(Icons.add, color: Colors.white),
+                    tooltip: 'เพิ่มข้อสอบใหม่',
                   ),
                 ],
               ),
@@ -87,7 +254,7 @@ class _TestPageState extends State<TestPage> {
                   return _TestCard(
                     item: t,
                     onTap: () {
-                      // ⬇️ เปลี่ยนเฉพาะชุด A ให้ไปหน้าแสดงผลคะแนน
+                      // ⬇️ เปลี่ยนเฉพาะชุด A ให้ไปหน้าแสดงผลคะแนน (เหมือนเดิม)
                       if (t.code == 'A') {
                         Navigator.push(
                           context,
@@ -114,8 +281,6 @@ class _TestPageState extends State<TestPage> {
       ),
 
       // ------- Bottom Navigation แบบเดียวกับหน้า Home -------
-      
-      // Bottom bar โค้งบน + ปุ่มสแกนอยู่ "ในบาร์" ตำแหน่งคงที่เสมอ
       bottomNavigationBar: keyboardOpen
           ? const SizedBox.shrink()
           : SafeArea(
@@ -158,19 +323,22 @@ class _TestPageState extends State<TestPage> {
                         label: 'Test',
                         active: _tab == 1,
                         onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const TestPage()),
-                          );
+                          // อยู่หน้าเดิม ไม่ต้องทำอะไร
                         },
                       ),
                     ),
 
                     // ปุ่มสแกน (อยู่ในบาร์ ไม่ลอย)
                     SizedBox(
-                      width: _kScanSize + 24, // เผื่อขอบซ้าย-ขวา
+                      width: _kScanSize + 24,
                       child: Center(
                         child: InkResponse(
                           radius: _kScanSize,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => const ScanPage()),
+                            );
+                          },
                           child: Container(
                             width: _kScanSize,
                             height: _kScanSize,
@@ -196,7 +364,7 @@ class _TestPageState extends State<TestPage> {
                     ),
 
                     // ขวา 2 ปุ่ม
-                   Expanded(
+                    Expanded(
                       child: _BarItem(
                         icon: Icons.calendar_month_rounded,
                         label: 'Calendar',
@@ -213,8 +381,7 @@ class _TestPageState extends State<TestPage> {
                       child: _BarItem(
                         icon: Icons.person_rounded,
                         label: 'Profile',
-                        active:
-                            _tab == 3, // จะคงไว้หรือจะเปลี่ยนเป็น false ก็ได้
+                        active: _tab == 3,
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(

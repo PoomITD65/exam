@@ -1,5 +1,6 @@
 // lib/features/auth/presentation/pages/calendar_page.dart
 import 'dart:io';
+import 'package:demo/features/auth/presentation/pages/scan_page.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../app/app_theme.dart';
@@ -10,19 +11,26 @@ import 'test_page.dart';
 import 'edit_profile_page.dart';
 
 class CalendarPage extends StatefulWidget {
-  const CalendarPage({super.key});
+  const CalendarPage({super.key, this.initialSelected});
+  final DateTime? initialSelected;
+
   @override
   State<CalendarPage> createState() => _CalendarPageState();
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-  // ---- Bottom bar config ----
+  // เดิมเป็นตัวแปรพร้อมค่าเริ่มต้น -> เปลี่ยนเป็น late แล้วตั้งใน initState
   static const double _kBarHeight = 64;
   static const double _kScanSize = 48;
-  int _tab = 2; // Calendar active
+  int _tab = 2;
 
-  // ---- State วันปัจจุบัน + อีเวนต์ตัวอย่าง ----
-  DateTime _selected = DateUtils.dateOnly(DateTime.now());
+  late DateTime _selected; // << เปลี่ยนเป็น late
+
+  @override
+  void initState() {
+    super.initState();
+    _selected = DateUtils.dateOnly(widget.initialSelected ?? DateTime.now());
+  }
 
   // เก็บอีเวนต์แบบ Map โดย "คีย์ต้องเป็น dateOnly" เสมอ
   final Map<DateTime, List<_Event>> _events = {
@@ -36,6 +44,14 @@ class _CalendarPageState extends State<CalendarPage> {
       ),
     ],
     DateUtils.dateOnly(DateTime(2025, 8, 19)): [
+      const _Event(
+        title: 'Internal review & planning',
+        timeRange: '09:30 - 10:30',
+        imagePath: 'assets/images/cover_placeholder.jpg',
+        detail: 'Weekly check-in with the team, define next sprint scope.',
+      ),
+    ],
+    DateUtils.dateOnly(DateTime(2025, 8, 22)): [
       const _Event(
         title: 'Internal review & planning',
         timeRange: '09:30 - 10:30',
@@ -929,7 +945,11 @@ class _CalendarPageState extends State<CalendarPage> {
                       child: Center(
                         child: InkResponse(
                           radius: _kScanSize,
-                          onTap: _showScanPopup,
+                          onTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => const ScanPage()),
+                            );
+                          },
                           child: Container(
                             width: _kScanSize,
                             height: _kScanSize,
