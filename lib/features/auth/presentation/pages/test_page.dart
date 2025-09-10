@@ -1,10 +1,7 @@
 import 'package:demo/features/auth/presentation/pages/calendar_page.dart';
 import 'package:demo/features/auth/presentation/pages/edit_profile_page.dart';
 import 'package:demo/features/auth/presentation/pages/home_page.dart';
-<<<<<<< HEAD
 import 'package:demo/features/auth/presentation/pages/scan_page.dart';
-=======
->>>>>>> f6b5df8b10faf5b2b5fac328189e9a905f8ebc5f
 import 'package:flutter/material.dart';
 import '../../../../app/app_theme.dart';
 
